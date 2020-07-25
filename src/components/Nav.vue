@@ -6,9 +6,15 @@
 			@click="showMenu = !showMenu"
 		></div>
 		<ul v-show="showMenu" class="menu">
-			<router-link to="/">Home</router-link>
-			<router-link to="/blackjack">BlackJack</router-link>
-			<router-link to="/credits">Credits</router-link>
+			<router-link to="/" @click="closeMenu">
+				Home
+			</router-link>
+			<router-link to="/blackjack" @click="closeMenu">
+				BlackJack
+			</router-link>
+			<router-link to="/credits" @click="closeMenu">
+				Credits
+			</router-link>
 		</ul>
 		<div v-show="showMenu" class="overlay"></div>
 	</nav>
@@ -20,6 +26,12 @@ export default {
 		return {
 			showMenu: false,
 		};
+	},
+
+	methods: {
+		closeMenu() {
+			this.showMenu = false;
+		},
 	},
 };
 </script>
@@ -73,7 +85,7 @@ export default {
 	z-index: 10;
 	top: 0;
 	right: 0;
-	width: 250px;
+	width: 270px;
 	height: 100vh;
 	padding: 50px 20px;
 	background-color: rgb(0, 0, 0, 0.9);

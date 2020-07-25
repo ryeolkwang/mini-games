@@ -4,8 +4,8 @@
 		<h3 class="subtitle">List of Games</h3>
 		<ul class="gameList">
 			<router-link
-				v-for="game in GAMES"
-				:key="game"
+				v-for="(game, idx) in GAMES"
+				:key="idx"
 				:to="game.page"
 				class="game"
 				tag="li"
