@@ -1,5 +1,10 @@
 <template>
 	<div class="table">
+		<div class="statistics">
+			<span>Bank: ${{ bankAmount }}</span>
+			<span>Bet: ${{ betAmount }}</span>
+			<span>Win rate: {{ winRate }}</span>
+		</div>
 		<div class="dealerSection">
 			Dealer
 			<span>{{ dealerValue }}</span>
@@ -13,7 +18,7 @@
 				/>
 			</div>
 		</div>
-		<div>
+		<div class="message">
 			{{ message }}
 		</div>
 		<div class="playerSection">
@@ -30,14 +35,32 @@
 			Player
 		</div>
 		<div class="buttonSection">
-			<button v-if="!isGameOver" @click="placePlayerCard">
+			<button v-if="!isGameOver && !isDecided" @click="placePlayerCard">
 				Hit
 			</button>
-			<button v-if="!isGameOver" @click="endTurn">
+			<button v-if="!isGameOver && !isDecided" @click="endTurn">
 				Stand
 			</button>
-			<button v-if="isGameOver" @click="initialize">
-				Start Again
+			<span v-if="isDecided || isGameOver">${{ betAmount }}</span>
+			<button
+				v-if="isDecided || isGameOver"
+				:disabled="betAmount === 0"
+				:class="{ ExDisabled: betAmount === 0 }"
+				@click="playBJ"
+			>
+				{{ playButton }}
+			</button>
+		</div>
+		<div v-if="isDecided || isGameOver" class="betSection">
+			<button
+				v-for="(bet, idx) in betUnits"
+				:key="idx"
+				@click="addBet(bet.value)"
+			>
+				{{ bet.amount }}
+			</button>
+			<button @click="resetBet">
+				Reset
 			</button>
 		</div>
 	</div>
@@ -48,13 +71,46 @@ import { CARDS } from '@/utils/constants.js';
 
 export default {
 	computed: {
+		winRate() {
+			if (this.numGames === undefined || this.numGames === 0) {
+				return 'N/A';
+			}
+			return Math.round((this.numWins / this.numGames) * 100) / 100;
+		},
+
+		playButton() {
+			if (this.numGames === undefined || this.numGames === 0) {
+				return 'play';
+			}
+			return 'play again';
+		},
+
+		betUnits: () => [
+			{ amount: '$10', value: 10 },
+			{ amount: '$20', value: 20 },
+			{ amount: '$50', value: 50 },
+			{ amount: '$100', value: 100 },
+		],
+
 		playerValue() {
+			if (
+				this.playerCards === undefined ||
+				this.playerCards.length === 0
+			) {
+				return 0;
+			}
 			return this.playerCards
 				.map(x => x.value)
 				.reduce((acc, cur) => acc + cur);
 		},
 
 		dealerValue() {
+			if (
+				this.dealerCards === undefined ||
+				this.dealerCards.length === 0
+			) {
+				return 0;
+			}
 			return this.dealerCards
 				.map(x => x.value)
 				.reduce((acc, cur) => acc + cur);
@@ -78,26 +134,42 @@ export default {
 			dealerCards: [],
 			playerCards: [],
 			message: '',
-			isDecided: false,
+			isDecided: true,
+			betAmount: 0,
+			bankAmount: 1000,
+			numGames: 0,
+			numWins: 0,
 		};
 	},
 
 	created() {
-		this.initialize();
+		this.message = 'Place your bets';
 	},
 
 	methods: {
-		initialize() {
-			this.shuffledCards = [];
+		addBet(bet) {
+			this.betAmount += bet;
+		},
+
+		resetBet() {
+			this.betAmount = 0;
+		},
+
+		playBJ() {
+			this.isDecided = false;
+			this.bankAmount -= this.betAmount;
+			this.shuffledCards = Array.from(CARDS);
 			this.dealerCards = [];
 			this.playerCards = [];
-			this.message = 'Dealer stands on 17';
+			this.message = 'Dealer stands on 17 \n Blackjack pays 2 to 1';
 			this.isDecided = false;
-			this.shuffleCards(CARDS);
+			this.numGames++;
+			this.shuffleCards(this.shuffledCards);
 			this.placePlayerCard();
 			this.placePlayerCard();
 			this.placeDealerCard();
 			this.placeDealerCard();
+			this.isBlackJack();
 		},
 
 		shuffleCards(array) {
@@ -105,12 +177,14 @@ export default {
 				const j = Math.floor(Math.random() * (i + 1));
 				[array[i], array[j]] = [array[j], array[i]];
 			}
-			this.shuffledCards = array;
 		},
 
 		placePlayerCard() {
 			this.playerCards.push(this.shuffledCards[0]);
 			this.shuffledCards.shift();
+			if (this.playerValue === 21) {
+				this.endTurn();
+			}
 		},
 
 		placeDealerCard() {
@@ -118,9 +192,21 @@ export default {
 			this.shuffledCards.shift();
 		},
 
+		isBlackJack() {
+			if (this.playerValue !== 21) {
+				return;
+			}
+			this.message = 'Blackjack! Player wins';
+			this.bankAmount += 3 * this.betAmount;
+			this.isDecided = true;
+		},
+
 		endTurn() {
 			if (this.dealerValue > 21) {
-				this.message = 'You win!';
+				this.message = 'Player wins!';
+				this.isDecided = true;
+				this.numWins++;
+				this.bankAmount += 2 * this.betAmount;
 			} else if (this.dealerValue >= 17) {
 				this.decideWinner();
 			} else {
@@ -130,14 +216,17 @@ export default {
 		},
 
 		decideWinner() {
-			this.isDecided = true;
 			if (this.dealerValue > this.playerValue) {
-				this.message = 'You lose...';
+				this.message = 'Dealer wins';
 			} else if (this.dealerValue < this.playerValue) {
-				this.message = 'You win!';
+				this.message = 'Player wins!';
+				this.numWins++;
+				this.bankAmount += 2 * this.betAmount;
 			} else {
-				this.message = 'Its a draw';
+				this.message = 'Draw';
+				this.bankAmount += this.betAmount;
 			}
+			this.isDecided = true;
 		},
 	},
 };
@@ -146,11 +235,19 @@ export default {
 <style lang="scss" scoped>
 .table {
 	height: 100%;
-	position: relative;
 	color: rgb(255, 255, 255);
 	font-size: 16px;
 	display: flex;
 	flex-direction: column;
+	justify-content: space-around;
+}
+
+.statistics {
+	position: absolute;
+	top: 10px;
+	left: 0;
+	width: 100%;
+	display: flex;
 	justify-content: space-around;
 }
 
@@ -160,7 +257,11 @@ export default {
 }
 
 .dealerCards {
-	position: relative;
+	margin-top: 10px;
+	padding: 10px;
+	height: 140px;
+	border: 1px solid #fff;
+	border-radius: 10px;
 	display: flex;
 	justify-content: center;
 }
@@ -171,23 +272,33 @@ export default {
 }
 
 .playerCards {
-	position: relative;
+	margin-bottom: 10px;
+	padding: 10px;
+	height: 140px;
+	border: 1px solid #fff;
+	border-radius: 10px;
 	display: flex;
 	justify-content: center;
 }
 
 .card {
 	position: relative;
-	width: 80px;
+	height: 120px;
 
 	+ .card {
 		margin-left: -60px;
 	}
 }
 
+.message {
+	font-size: 16px;
+	text-transform: uppercase;
+}
+
 .buttonSection {
 	display: flex;
 	justify-content: space-evenly;
+	align-items: center;
 
 	button {
 		color: #fff;
@@ -199,6 +310,35 @@ export default {
 		border: 1px solid #fff;
 		border-radius: 4px;
 		text-transform: uppercase;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		&.ExDisabled {
+			font-weight: normal;
+			color: #777;
+			border-color: #777;
+			background-color: rgb(0, 73, 6);
+		}
+	}
+}
+
+.betSection {
+	display: flex;
+	justify-content: space-evenly;
+
+	button {
+		color: #fff;
+		font-size: 14px;
+		padding: 4px 6px;
+		background-color: transparent;
+		outline: none;
+		border: 1px solid #fff;
+		border-radius: 3px;
+		text-transform: uppercase;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 	}
 }
 </style>

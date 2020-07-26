@@ -32,6 +32,7 @@ export default {
 
 <style lang="scss" scoped>
 .blackjack {
+	position: relative;
 	height: calc(100vh - 50px);
 	height: calc(var(--vh, 1vh) * 100 - 50px);
 	background: url('../assets/green_table.jpg') no-repeat center;
