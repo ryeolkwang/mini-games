@@ -6,13 +6,13 @@
 			@click="showMenu = !showMenu"
 		></div>
 		<ul v-show="showMenu" class="menu">
-			<router-link to="/" @click="closeMenu">
+			<router-link to="/" @click.native="closeMenu">
 				Home
 			</router-link>
-			<router-link to="/blackjack" @click="closeMenu">
+			<router-link to="/blackjack" @click.native="closeMenu">
 				BlackJack
 			</router-link>
-			<router-link to="/credits" @click="closeMenu">
+			<router-link to="/credits" @click.native="closeMenu">
 				Credits
 			</router-link>
 		</ul>
