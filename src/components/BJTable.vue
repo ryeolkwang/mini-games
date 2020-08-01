@@ -158,7 +158,7 @@ export default {
 		playBJ() {
 			this.isDecided = false;
 			this.bankAmount -= this.betAmount;
-			this.shuffledCards = Array.from(CARDS);
+			this.shuffledCards = JSON.parse(JSON.stringify(CARDS));
 			this.dealerCards = [];
 			this.playerCards = [];
 			this.message = 'Dealer stands on 17 \n Blackjack pays 2 to 1';
@@ -182,7 +182,14 @@ export default {
 		placePlayerCard() {
 			this.playerCards.push(this.shuffledCards[0]);
 			this.shuffledCards.shift();
-			if (this.playerValue === 21) {
+			if (
+				this.playerValue > 21 &&
+				this.playerCards.map(x => x.value).lastIndexOf(11) !== -1
+			) {
+				this.playerCards.filter(x => x.value === 11)[
+					this.playerCards.filter(x => x.value === 11).length - 1
+				].value = 1;
+			} else if (this.playerValue === 21) {
 				this.endTurn();
 			}
 		},
@@ -190,6 +197,14 @@ export default {
 		placeDealerCard() {
 			this.dealerCards.push(this.shuffledCards[0]);
 			this.shuffledCards.shift();
+			if (
+				this.dealerValue > 21 &&
+				this.dealerCards.map(x => x.value).lastIndexOf(11) !== -1
+			) {
+				this.dealerCards.filter(x => x.value === 11)[
+					this.dealerCards.filter(x => x.value === 11).length - 1
+				].value = 1;
+			}
 		},
 
 		isBlackJack() {

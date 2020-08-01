@@ -7,7 +7,7 @@
 		>
 			Play
 		</div>
-		<BJTable v-if="isPlaying" />
+		<BJTable v-if="isPlaying" @end-game="isPlaying = !isPlaying" />
 	</div>
 </template>
 
