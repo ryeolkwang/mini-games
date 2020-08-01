@@ -44,9 +44,13 @@
 			<span v-if="isDecided || isGameOver">${{ betAmount }}</span>
 			<button
 				v-if="isDecided || isGameOver"
-				:disabled="betAmount === 0"
-				:class="{ ExDisabled: betAmount === 0 }"
-				@click="playBJ"
+				:disabled="betAmount === 0 && bankAmount !== 0"
+				:class="{ ExDisabled: betAmount === 0 && bankAmount !== 0 }"
+				@click="
+					bankAmount === 0 && betAmount === 0
+						? $emit('end-game')
+						: playBJ()
+				"
 			>
 				{{ playButton }}
 			</button>
@@ -79,7 +83,9 @@ export default {
 		},
 
 		playButton() {
-			if (this.numGames === undefined || this.numGames === 0) {
+			if (this.bankAmount === 0 && this.betAmount === 0) {
+				return 'bankrupt';
+			} else if (this.numGames === undefined || this.numGames === 0) {
 				return 'play';
 			}
 			return 'play again';
@@ -222,8 +228,10 @@ export default {
 				this.isDecided = true;
 				this.numWins++;
 				this.bankAmount += 2 * this.betAmount;
+				this.resetBet();
 			} else if (this.dealerValue >= 17) {
 				this.decideWinner();
+				this.resetBet();
 			} else {
 				this.placeDealerCard();
 				this.endTurn();
