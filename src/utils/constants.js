@@ -260,3 +260,9 @@ export const CARDS = [
 		value: 11,
 	},
 ];
+
+export const JOKER = {
+	name: 'Joker',
+	src: require('../assets/cards/black_joker.png'),
+	value: 0,
+};

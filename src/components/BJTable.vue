@@ -5,6 +5,13 @@
 			<span>Bet: ${{ betAmount }}</span>
 			<span>Win rate: {{ winRate }}</span>
 		</div>
+		<div v-if="isJokerOut" class="joker">
+			<img :src="JOKER.src" alt="Joker Card" class="jokerCard" />
+			Deck will be shuffled next round
+		</div>
+		<div class="notes">
+			Currently playing with 6 decks
+		</div>
 		<div class="dealerSection">
 			Dealer
 			<span>{{ dealerValue }}</span>
@@ -74,10 +81,12 @@
 </template>
 
 <script>
-import { CARDS } from '@/utils/constants.js';
+import { CARDS, JOKER } from '@/utils/constants.js';
 
 export default {
 	computed: {
+		JOKER: () => JOKER,
+
 		winRate() {
 			if (this.numGames === undefined || this.numGames === 0) {
 				return 'N/A';
@@ -149,11 +158,13 @@ export default {
 			bankAmount: 1000,
 			numGames: 0,
 			numWins: 0,
+			isJokerOut: false,
 		};
 	},
 
 	created() {
 		this.message = 'Place your bets';
+		this.shuffleDeck();
 	},
 
 	methods: {
@@ -171,30 +182,44 @@ export default {
 		},
 
 		playBJ() {
+			if (this.isJokerOut) {
+				this.shuffleDeck();
+				this.isJokerOut = false;
+			}
 			this.isDecided = false;
 			this.bankAmount -= this.betAmount;
-			this.shuffledCards = new Array(6)
-				.fill(JSON.parse(JSON.stringify(CARDS)))
-				.flat();
 			this.dealerCards = [];
 			this.playerCards = [];
 			this.message = 'Dealer stands on 17 \n Blackjack pays 2 to 1';
 			this.numGames++;
-			this.shuffleCards(this.shuffledCards);
 			this.placePlayerCard();
 			this.placePlayerCard();
 			this.placeDealerCard();
 			this.placeDealerCard();
 		},
 
-		shuffleCards(array) {
-			for (let i = array.length - 1; i > 0; i--) {
+		shuffleDeck() {
+			this.shuffledCards = new Array(1)
+				.fill(JSON.parse(JSON.stringify(CARDS)))
+				.flat();
+			this.shuffledCards.push(JOKER);
+			for (let i = this.shuffledCards.length - 1; i > 0; i--) {
 				const j = Math.floor(Math.random() * (i + 1));
-				[array[i], array[j]] = [array[j], array[i]];
+				[this.shuffledCards[i], this.shuffledCards[j]] = [
+					this.shuffledCards[j],
+					this.shuffledCards[i],
+				];
 			}
 		},
 
 		placePlayerCard() {
+			if (this.shuffledCards[0].name === 'Joker') {
+				this.isJokerOut = true;
+				this.message = 'Deck will be shuffled next round';
+				this.shuffledCards.shift();
+				this.placePlayerCard();
+				return;
+			}
 			this.playerCards.push(this.shuffledCards[0]);
 			this.shuffledCards.shift();
 			if (
@@ -217,6 +242,13 @@ export default {
 		},
 
 		placeDealerCard() {
+			if (this.shuffledCards[0].name === 'Joker') {
+				this.isJokerOut = true;
+				this.message = 'Deck will be shuffled next round';
+				this.shuffledCards.shift();
+				this.placeDealerCard();
+				return;
+			}
 			this.dealerCards.push(this.shuffledCards[0]);
 			this.shuffledCards.shift();
 			if (
@@ -232,6 +264,7 @@ export default {
 		isBlackJack() {
 			this.message = 'Blackjack! Player wins';
 			this.bankAmount += 3 * this.betAmount;
+			this.resetBet();
 			this.isDecided = true;
 		},
 
@@ -285,6 +318,32 @@ export default {
 	width: 100%;
 	display: flex;
 	justify-content: space-around;
+}
+
+.joker {
+	width: 100px;
+	position: absolute;
+	top: 40px;
+	left: 20px;
+	display: flex;
+	font-size: 10px;
+	line-height: 1.4;
+	text-align: left;
+
+	.jokerCard {
+		height: 40px;
+		margin-right: 10px;
+	}
+}
+
+.notes {
+	width: 80px;
+	position: absolute;
+	top: 40px;
+	right: 20px;
+	font-size: 10px;
+	line-height: 1.4;
+	text-align: right;
 }
 
 .dealerSection {
