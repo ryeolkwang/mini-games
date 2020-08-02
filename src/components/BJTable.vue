@@ -173,18 +173,18 @@ export default {
 		playBJ() {
 			this.isDecided = false;
 			this.bankAmount -= this.betAmount;
-			this.shuffledCards = JSON.parse(JSON.stringify(CARDS));
+			this.shuffledCards = new Array(6)
+				.fill(JSON.parse(JSON.stringify(CARDS)))
+				.flat();
 			this.dealerCards = [];
 			this.playerCards = [];
 			this.message = 'Dealer stands on 17 \n Blackjack pays 2 to 1';
-			this.isDecided = false;
 			this.numGames++;
 			this.shuffleCards(this.shuffledCards);
 			this.placePlayerCard();
 			this.placePlayerCard();
 			this.placeDealerCard();
 			this.placeDealerCard();
-			this.isBlackJack();
 		},
 
 		shuffleCards(array) {
@@ -204,6 +204,13 @@ export default {
 				this.playerCards.filter(x => x.value === 11)[
 					this.playerCards.filter(x => x.value === 11).length - 1
 				].value = 1;
+			} else if (this.playerValue > 21) {
+				this.decideWinner();
+			} else if (
+				this.playerCards.length === 2 &&
+				this.playerValue === 21
+			) {
+				this.isBlackJack();
 			} else if (this.playerValue === 21) {
 				this.endTurn();
 			}
@@ -223,21 +230,13 @@ export default {
 		},
 
 		isBlackJack() {
-			if (this.playerValue !== 21) {
-				return;
-			}
 			this.message = 'Blackjack! Player wins';
 			this.bankAmount += 3 * this.betAmount;
 			this.isDecided = true;
 		},
 
 		endTurn() {
-			if (this.dealerValue > 21) {
-				this.message = 'Player wins!';
-				this.isDecided = true;
-				this.numWins++;
-				this.bankAmount += 2 * this.betAmount;
-			} else if (this.dealerValue >= 17) {
+			if (this.dealerValue >= 17) {
 				this.decideWinner();
 			} else {
 				this.placeDealerCard();
@@ -246,9 +245,15 @@ export default {
 		},
 
 		decideWinner() {
-			if (this.dealerValue > this.playerValue) {
+			if (
+				this.playerValue > 21 ||
+				(this.dealerValue <= 21 && this.dealerValue > this.playerValue)
+			) {
 				this.message = 'Dealer wins';
-			} else if (this.dealerValue < this.playerValue) {
+			} else if (
+				this.dealerValue > 21 ||
+				(this.playerValue <= 21 && this.dealerValue < this.playerValue)
+			) {
 				this.message = 'Player wins!';
 				this.numWins++;
 				this.bankAmount += 2 * this.betAmount;
