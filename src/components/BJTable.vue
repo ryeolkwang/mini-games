@@ -63,8 +63,11 @@
 			>
 				{{ bet.amount }}
 			</button>
-			<button @click="resetBet">
+			<button v-if="betAmount > 0" @click="resetBet">
 				Reset
+			</button>
+			<button v-if="betAmount === 0" @click="reBet">
+				Re-bet
 			</button>
 		</div>
 	</div>
@@ -142,6 +145,7 @@ export default {
 			message: '',
 			isDecided: true,
 			betAmount: 0,
+			previousBetAmount: 0,
 			bankAmount: 1000,
 			numGames: 0,
 			numWins: 0,
@@ -158,7 +162,12 @@ export default {
 		},
 
 		resetBet() {
+			this.previousBetAmount = this.betAmount;
 			this.betAmount = 0;
+		},
+
+		reBet() {
+			this.betAmount = this.previousBetAmount;
 		},
 
 		playBJ() {
@@ -228,10 +237,8 @@ export default {
 				this.isDecided = true;
 				this.numWins++;
 				this.bankAmount += 2 * this.betAmount;
-				this.resetBet();
 			} else if (this.dealerValue >= 17) {
 				this.decideWinner();
-				this.resetBet();
 			} else {
 				this.placeDealerCard();
 				this.endTurn();
@@ -249,6 +256,7 @@ export default {
 				this.message = 'Draw';
 				this.bankAmount += this.betAmount;
 			}
+			this.resetBet();
 			this.isDecided = true;
 		},
 	},
