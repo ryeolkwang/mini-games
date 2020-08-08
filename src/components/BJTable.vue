@@ -10,18 +10,27 @@
 			Deck will be shuffled next round
 		</div>
 		<div class="notes">
-			Currently playing with 6 decks
+			Currently playing with 4 decks
 		</div>
 		<div class="dealerSection">
 			Dealer
-			<span>{{ dealerValue }}</span>
+			<span>{{
+				dealerCards.length === 2 && !isDecided
+					? dealerCards[0].value
+					: dealerValue
+			}}</span>
 			<div class="dealerCards">
 				<img
 					v-for="(card, idx) in dealerCards"
 					:key="idx"
 					:src="card.src"
-					alt="Dealer Card"
+					:alt="
+						hiddenDealerCard && idx === 1
+							? 'Hidden Dealer Card'
+							: 'Dealer Card'
+					"
 					class="card"
+					:class="{ ExHide: hiddenDealerCard && idx === 1 }"
 				/>
 			</div>
 		</div>
@@ -159,6 +168,7 @@ export default {
 			numGames: 0,
 			numWins: 0,
 			isJokerOut: false,
+			hiddenDealerCard: '',
 		};
 	},
 
@@ -182,24 +192,31 @@ export default {
 		},
 
 		playBJ() {
+			this.shuffledCards
+				.filter(card => card.value === 1)
+				.map(card => (card.value = 11));
 			if (this.isJokerOut) {
 				this.shuffleDeck();
 				this.isJokerOut = false;
 			}
 			this.isDecided = false;
+			this.hiddenDealerCard = '';
 			this.bankAmount -= this.betAmount;
 			this.dealerCards = [];
 			this.playerCards = [];
-			this.message = 'Dealer stands on 17 \n Blackjack pays 2 to 1';
+			this.message = 'Dealer stands on 17 \n Blackjack pays 3 to 2';
 			this.numGames++;
 			this.placePlayerCard();
 			this.placePlayerCard();
+			if (this.playerValue === 21 && this.playerCards.length === 2) {
+				return;
+			}
 			this.placeDealerCard();
 			this.placeDealerCard();
 		},
 
 		shuffleDeck() {
-			this.shuffledCards = new Array(1)
+			this.shuffledCards = new Array(4) //Number of Decks
 				.fill(JSON.parse(JSON.stringify(CARDS)))
 				.flat();
 			this.shuffledCards.push(JOKER);
@@ -231,11 +248,6 @@ export default {
 				].value = 1;
 			} else if (this.playerValue > 21) {
 				this.decideWinner();
-			} else if (
-				this.playerCards.length === 2 &&
-				this.playerValue === 21
-			) {
-				this.isBlackJack();
 			} else if (this.playerValue === 21) {
 				this.endTurn();
 			}
@@ -250,6 +262,10 @@ export default {
 				return;
 			}
 			this.dealerCards.push(this.shuffledCards[0]);
+			if (this.dealerCards.length === 2) {
+				this.hiddenDealerCard = this.dealerCards[1].src;
+				this.dealerCards[1].src = '';
+			}
 			this.shuffledCards.shift();
 			if (
 				this.dealerValue > 21 &&
@@ -261,14 +277,10 @@ export default {
 			}
 		},
 
-		isBlackJack() {
-			this.message = 'Blackjack! Player wins';
-			this.bankAmount += 3 * this.betAmount;
-			this.resetBet();
-			this.isDecided = true;
-		},
-
 		endTurn() {
+			if (this.dealerCards[1]) {
+				this.dealerCards[1].src = this.hiddenDealerCard;
+			}
 			if (this.dealerValue >= 17) {
 				this.decideWinner();
 			} else {
@@ -278,7 +290,23 @@ export default {
 		},
 
 		decideWinner() {
+			this.dealerCards[1].src = this.hiddenDealerCard;
 			if (
+				this.playerValue === 21 &&
+				this.playerCards.length === 2 &&
+				(this.dealerValue !== 21 ||
+					(this.dealerValue === 21 && this.dealerCards.length !== 2))
+			) {
+				this.message = 'Blackjack! Player wins';
+				this.bankAmount += 2.5 * this.betAmount;
+			} else if (
+				this.dealerValue === 21 &&
+				this.dealerCards.length === 2 &&
+				(this.playerValue !== 21 ||
+					(this.playerValue === 21 && this.playerCards.length !== 2))
+			) {
+				this.message = 'Dealer has Blackjack. Dealer wins';
+			} else if (
 				this.playerValue > 21 ||
 				(this.dealerValue <= 21 && this.dealerValue > this.playerValue)
 			) {
@@ -378,10 +406,15 @@ export default {
 
 .card {
 	position: relative;
-	height: 120px;
+	width: 80px;
 
 	+ .card {
-		margin-left: -60px;
+		margin-left: -58px;
+	}
+
+	&.ExHide {
+		background-color: #000;
+		border-radius: 4px;
 	}
 }
 
