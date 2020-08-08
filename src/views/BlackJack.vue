@@ -37,7 +37,7 @@ export default {
 	height: calc(var(--vh, 1vh) * 100 - 50px);
 	background: url('../assets/green_table.jpg') no-repeat center;
 	background-size: cover;
-	padding: 50px;
+	padding: 40px;
 }
 
 .playButton {

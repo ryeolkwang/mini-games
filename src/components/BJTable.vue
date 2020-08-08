@@ -14,7 +14,7 @@
 		</div>
 		<div class="dealerSection">
 			Dealer
-			<span>{{
+			<span class="dealerScore">{{
 				dealerCards.length === 2 && !isDecided
 					? dealerCards[0].value
 					: dealerValue
@@ -23,14 +23,21 @@
 				<img
 					v-for="(card, idx) in dealerCards"
 					:key="idx"
-					:src="card.src"
+					:src="
+						dealerCards.length === 2 && !isDecided && idx === 1
+							? ''
+							: card.src
+					"
 					:alt="
-						hiddenDealerCard && idx === 1
-							? 'Hidden Dealer Card'
+						dealerCards.length === 2 && !isDecided && idx === 1
+							? ''
 							: 'Dealer Card'
 					"
 					class="card"
-					:class="{ ExHide: hiddenDealerCard && idx === 1 }"
+					:class="{
+						ExHide:
+							dealerCards.length === 2 && !isDecided && idx === 1,
+					}"
 				/>
 			</div>
 		</div>
@@ -47,29 +54,33 @@
 					class="card"
 				/>
 			</div>
-			<span>{{ playerValue }}</span>
+			<span class="playerScore">{{ playerValue }}</span>
 			Player
 		</div>
 		<div class="buttonSection">
-			<button v-if="!isGameOver && !isDecided" @click="placePlayerCard">
+			<button v-if="!isDecided" @click="placePlayerCard">
 				Hit
 			</button>
-			<button v-if="!isGameOver && !isDecided" @click="endTurn">
+			<button v-if="!isDecided" @click="endTurn">
 				Stand
 			</button>
 			<button
-				v-if="!isGameOver && !isDecided && playerCards.length === 2"
+				v-if="
+					!isDecided &&
+						playerCards.length === 2 &&
+						bankAmount > betAmount
+				"
 				@click="double"
 			>
 				Double
 			</button>
-			<span v-if="isDecided || isGameOver">${{ betAmount }}</span>
+			<span v-if="isDecided">${{ betAmount }}</span>
 			<button
-				v-if="isDecided || isGameOver"
-				:disabled="betAmount === 0 && bankAmount !== 0"
-				:class="{ ExDisabled: betAmount === 0 && bankAmount !== 0 }"
+				v-if="isDecided"
+				:disabled="betAmount === 0 && bankAmount > 0"
+				:class="{ ExDisabled: betAmount === 0 && bankAmount > 0 }"
 				@click="
-					bankAmount === 0 && betAmount === 0
+					bankAmount <= 0 && betAmount === 0
 						? $emit('end-game')
 						: playBJ()
 				"
@@ -77,7 +88,7 @@
 				{{ playButton }}
 			</button>
 		</div>
-		<div v-if="isDecided || isGameOver" class="betSection">
+		<div v-if="isDecided && bankAmount > 0" class="betSection">
 			<button
 				v-for="(bet, idx) in betUnits"
 				:key="idx"
@@ -110,7 +121,7 @@ export default {
 		},
 
 		playButton() {
-			if (this.bankAmount === 0 && this.betAmount === 0) {
+			if (this.bankAmount <= 0 && this.betAmount === 0) {
 				return 'bankrupt';
 			} else if (this.numGames === undefined || this.numGames === 0) {
 				return 'play';
@@ -148,17 +159,6 @@ export default {
 				.map(x => x.value)
 				.reduce((acc, cur) => acc + cur);
 		},
-
-		isGameOver() {
-			if (
-				this.playerValue > 21 ||
-				this.dealerValue > 21 ||
-				this.isDecided
-			) {
-				return true;
-			}
-			return false;
-		},
 	},
 
 	data() {
@@ -174,8 +174,15 @@ export default {
 			numGames: 0,
 			numWins: 0,
 			isJokerOut: false,
-			hiddenDealerCard: '',
 		};
+	},
+
+	watch: {
+		betAmount(val) {
+			if (val > this.bankAmount) {
+				this.betAmount = this.bankAmount;
+			}
+		},
 	},
 
 	created() {
@@ -206,11 +213,10 @@ export default {
 				this.isJokerOut = false;
 			}
 			this.isDecided = false;
-			this.hiddenDealerCard = '';
 			this.bankAmount -= this.betAmount;
 			this.dealerCards = [];
 			this.playerCards = [];
-			this.message = 'Dealer stands on 17 \n Blackjack pays 3 to 2';
+			this.message = 'Dealer stands on 17\nBlackjack pays 3 to 2';
 			this.numGames++;
 			this.placePlayerCard();
 			this.placePlayerCard();
@@ -235,7 +241,8 @@ export default {
 			}
 		},
 
-		placePlayerCard() {
+		placePlayerCard(play) {
+			console.log(play);
 			if (this.shuffledCards[0].name === 'Joker') {
 				this.isJokerOut = true;
 				this.message = 'Deck will be shuffled next round';
@@ -252,9 +259,10 @@ export default {
 				this.playerCards.filter(x => x.value === 11)[
 					this.playerCards.filter(x => x.value === 11).length - 1
 				].value = 1;
-			} else if (this.playerValue > 21) {
+			}
+			if (this.playerValue > 21) {
 				this.decideWinner();
-			} else if (this.playerValue === 21) {
+			} else if (this.playerValue === 21 || play === 'double') {
 				this.endTurn();
 			}
 		},
@@ -268,10 +276,6 @@ export default {
 				return;
 			}
 			this.dealerCards.push(this.shuffledCards[0]);
-			if (this.dealerCards.length === 2) {
-				this.hiddenDealerCard = this.dealerCards[1].src;
-				this.dealerCards[1].src = '';
-			}
 			this.shuffledCards.shift();
 			if (
 				this.dealerValue > 21 &&
@@ -286,18 +290,10 @@ export default {
 		double() {
 			this.bankAmount -= this.betAmount;
 			this.betAmount *= 2;
-			this.placePlayerCard();
-			if (this.playerValue > 21) {
-				this.decideWinner();
-			} else {
-				this.endTurn();
-			}
+			this.placePlayerCard('double');
 		},
 
 		endTurn() {
-			if (this.dealerCards[1]) {
-				this.dealerCards[1].src = this.hiddenDealerCard;
-			}
 			if (this.dealerValue >= 17) {
 				this.decideWinner();
 			} else {
@@ -307,7 +303,6 @@ export default {
 		},
 
 		decideWinner() {
-			this.dealerCards[1].src = this.hiddenDealerCard;
 			if (
 				this.playerValue === 21 &&
 				this.playerCards.length === 2 &&
@@ -397,13 +392,18 @@ export default {
 }
 
 .dealerCards {
-	margin-top: 10px;
+	margin-top: 6px;
 	padding: 10px;
 	height: 140px;
+	background-color: rgba(255, 255, 255, 0.2);
 	border: 1px solid #fff;
 	border-radius: 10px;
 	display: flex;
 	justify-content: center;
+}
+
+.dealerScore {
+	font-size: 20px;
 }
 
 .playerSection {
@@ -412,13 +412,18 @@ export default {
 }
 
 .playerCards {
-	margin-bottom: 10px;
+	margin-bottom: 6px;
 	padding: 10px;
 	height: 140px;
+	background-color: rgba(255, 255, 255, 0.2);
 	border: 1px solid #fff;
 	border-radius: 10px;
 	display: flex;
 	justify-content: center;
+}
+
+.playerScore {
+	font-size: 20px;
 }
 
 .card {
@@ -430,7 +435,8 @@ export default {
 	}
 
 	&.ExHide {
-		background-color: #000;
+		background-color: rgba(0, 0, 0, 0.95);
+		border: 1px solid #000;
 		border-radius: 4px;
 	}
 }
@@ -447,9 +453,9 @@ export default {
 
 	button {
 		color: #fff;
-		font-size: 16px;
+		font-size: 14px;
 		font-weight: bold;
-		padding: 10px 15px;
+		padding: 8px 12px;
 		background-color: transparent;
 		outline: none;
 		border: 1px solid #fff;
