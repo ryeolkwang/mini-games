@@ -57,6 +57,12 @@
 			<button v-if="!isGameOver && !isDecided" @click="endTurn">
 				Stand
 			</button>
+			<button
+				v-if="!isGameOver && !isDecided && playerCards.length === 2"
+				@click="double"
+			>
+				Double
+			</button>
 			<span v-if="isDecided || isGameOver">${{ betAmount }}</span>
 			<button
 				v-if="isDecided || isGameOver"
@@ -274,6 +280,17 @@ export default {
 				this.dealerCards.filter(x => x.value === 11)[
 					this.dealerCards.filter(x => x.value === 11).length - 1
 				].value = 1;
+			}
+		},
+
+		double() {
+			this.bankAmount -= this.betAmount;
+			this.betAmount *= 2;
+			this.placePlayerCard();
+			if (this.playerValue > 21) {
+				this.decideWinner();
+			} else {
+				this.endTurn();
 			}
 		},
 
