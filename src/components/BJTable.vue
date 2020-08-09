@@ -17,7 +17,7 @@
 			<span class="dealerScore">{{
 				dealersHand.length === 2 && !isDecided
 					? dealersHand[0].value
-					: dealerValue
+					: handValue(dealersHand)
 			}}</span>
 			<div class="dealerCards">
 				<img
@@ -54,14 +54,15 @@
 					class="card"
 				/>
 			</div>
-			<span class="playerScore">{{ playerValue }}</span>
+
+			<span class="playerScore">{{ handValue(playersHand) }}</span>
 			Player
 		</div>
 		<div class="buttonSection">
-			<button v-if="!isDecided" @click="placePlayerCard">
+			<button v-if="!isDecided" @click="placePlayerCard()">
 				Hit
 			</button>
-			<button v-if="!isDecided" @click="endTurn">
+			<button v-if="!isDecided" @click="endTurn()">
 				Stand
 			</button>
 			<button
@@ -70,7 +71,7 @@
 						playersHand.length === 2 &&
 						bankAmount > betAmount
 				"
-				@click="double"
+				@click="double()"
 			>
 				Double
 			</button>
@@ -136,28 +137,8 @@ export default {
 			{ amount: '$100', value: 100 },
 		],
 
-		playerValue() {
-			if (
-				this.playersHand === undefined ||
-				this.playersHand.length === 0
-			) {
-				return 0;
-			}
-			return this.playersHand
-				.map(x => x.value)
-				.reduce((acc, cur) => acc + cur);
-		},
-
-		dealerValue() {
-			if (
-				this.dealersHand === undefined ||
-				this.dealersHand.length === 0
-			) {
-				return 0;
-			}
-			return this.dealersHand
-				.map(x => x.value)
-				.reduce((acc, cur) => acc + cur);
+		isBJ(hand) {
+			return this.handValue(hand) === 21 && hand.length === 2;
 		},
 	},
 
@@ -191,6 +172,13 @@ export default {
 	},
 
 	methods: {
+		handValue(hand) {
+			if (hand === undefined || hand.length === 0) {
+				return 0;
+			}
+			return hand.map(x => x.value).reduce((acc, cur) => acc + cur);
+		},
+
 		addBet(bet) {
 			this.betAmount += bet;
 		},
@@ -220,7 +208,10 @@ export default {
 			this.numGames++;
 			this.placePlayerCard();
 			this.placePlayerCard();
-			if (this.playerValue === 21 && this.playersHand.length === 2) {
+			if (
+				this.handValue(this.playersHand) === 21 &&
+				this.playersHand.length === 2
+			) {
 				return;
 			}
 			this.placeDealerCard();
@@ -241,28 +232,27 @@ export default {
 			}
 		},
 
-		placePlayerCard(play) {
-			console.log(play);
+		placePlayerCard(hand = this.playersHand, play) {
 			if (this.shuffledCards[0].name === 'Joker') {
 				this.isJokerOut = true;
 				this.message = 'Deck will be shuffled next round';
 				this.shuffledCards.shift();
-				this.placePlayerCard();
+				this.placePlayerCard(hand);
 				return;
 			}
-			this.playersHand.push(this.shuffledCards[0]);
+			hand.push(this.shuffledCards[0]);
 			this.shuffledCards.shift();
 			if (
-				this.playerValue > 21 &&
-				this.playersHand.map(x => x.value).lastIndexOf(11) !== -1
+				this.handValue(hand) > 21 &&
+				hand.map(x => x.value).lastIndexOf(11) !== -1
 			) {
-				this.playersHand.filter(x => x.value === 11)[
-					this.playersHand.filter(x => x.value === 11).length - 1
+				hand.filter(x => x.value === 11)[
+					hand.filter(x => x.value === 11).length - 1
 				].value = 1;
 			}
-			if (this.playerValue > 21) {
-				this.decideWinner();
-			} else if (this.playerValue === 21 || play === 'double') {
+			if (this.handValue(hand) > 21) {
+				this.decideWinner(hand);
+			} else if (this.handValue(hand) === 21 || play === 'double') {
 				this.endTurn();
 			}
 		},
@@ -278,7 +268,7 @@ export default {
 			this.dealersHand.push(this.shuffledCards[0]);
 			this.shuffledCards.shift();
 			if (
-				this.dealerValue > 21 &&
+				this.handValue(this.dealersHand) > 21 &&
 				this.dealersHand.map(x => x.value).lastIndexOf(11) !== -1
 			) {
 				this.dealersHand.filter(x => x.value === 11)[
@@ -290,11 +280,11 @@ export default {
 		double() {
 			this.bankAmount -= this.betAmount;
 			this.betAmount *= 2;
-			this.placePlayerCard('double');
+			this.placePlayerCard(this.playersHand, 'double');
 		},
 
 		endTurn() {
-			if (this.dealerValue >= 17) {
+			if (this.handValue(this.dealersHand) >= 17) {
 				this.decideWinner();
 			} else {
 				this.placeDealerCard();
@@ -302,30 +292,22 @@ export default {
 			}
 		},
 
-		decideWinner() {
-			if (
-				this.playerValue === 21 &&
-				this.playersHand.length === 2 &&
-				(this.dealerValue !== 21 ||
-					(this.dealerValue === 21 && this.dealersHand.length !== 2))
-			) {
+		decideWinner(hand = this.playersHand) {
+			if (this.isBJ(hand) && !this.isBJ(this.dealersHand)) {
 				this.message = 'Blackjack! Player wins';
 				this.bankAmount += 2.5 * this.betAmount;
-			} else if (
-				this.dealerValue === 21 &&
-				this.dealersHand.length === 2 &&
-				(this.playerValue !== 21 ||
-					(this.playerValue === 21 && this.playersHand.length !== 2))
-			) {
+			} else if (!this.isBJ(hand) && this.isBJ(this.dealersHand)) {
 				this.message = 'Dealer has Blackjack. Dealer wins';
 			} else if (
-				this.playerValue > 21 ||
-				(this.dealerValue <= 21 && this.dealerValue > this.playerValue)
+				this.handValue(hand) > 21 ||
+				(this.handValue(this.dealersHand) <= 21 &&
+					this.handValue(this.dealersHand) > this.handValue(hand))
 			) {
 				this.message = 'Dealer wins';
 			} else if (
-				this.dealerValue > 21 ||
-				(this.playerValue <= 21 && this.dealerValue < this.playerValue)
+				this.handValue(this.dealersHand) > 21 ||
+				(this.handValue(hand) <= 21 &&
+					this.handValue(this.dealersHand) < this.handValue(hand))
 			) {
 				this.message = 'Player wins!';
 				this.numWins++;
@@ -397,7 +379,7 @@ export default {
 	height: 140px;
 	background-color: rgba(255, 255, 255, 0.2);
 	border: 1px solid #fff;
-	border-radius: 10px;
+	border-radius: 6px;
 	display: flex;
 	justify-content: center;
 }
@@ -417,7 +399,7 @@ export default {
 	height: 140px;
 	background-color: rgba(255, 255, 255, 0.2);
 	border: 1px solid #fff;
-	border-radius: 10px;
+	border-radius: 6px;
 	display: flex;
 	justify-content: center;
 }
