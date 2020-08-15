@@ -110,7 +110,7 @@
 			<button v-if="canDouble" @click="double(currentHand)">
 				Double
 			</button>
-			<button @click="split()">
+			<button v-if="canSplit" @click="split()">
 				Split
 			</button>
 			<span v-if="isDecided">${{ betAmount }}</span>
@@ -128,15 +128,15 @@
 			</button>
 		</div>
 		<div v-if="isDecided && bankAmount > 0" class="betSection">
+			<button v-if="betAmount > 0" @click="resetBet">
+				Reset
+			</button>
 			<button
 				v-for="(bet, idx) in betUnits"
 				:key="idx"
 				@click="addBet(bet.value)"
 			>
 				{{ bet.amount }}
-			</button>
-			<button v-if="betAmount > 0" @click="resetBet">
-				Reset
 			</button>
 			<button
 				v-if="betAmount === 0 && previousBetAmount !== 0"
@@ -189,10 +189,11 @@ export default {
 		canSplit() {
 			return (
 				!this.isDecided &&
-				this.playersHand.length !== 0 &&
-				this.playersHand[0].value === this.playersHand[1].value &&
+				this.bankAmount >= this.betAmount &&
 				this.playersSplitHand.length === 0 &&
-				this.bankAmount >= this.betAmount
+				this.playersHand.length !== 0 &&
+				(this.playersHand[0].value === this.playersHand[1].value ||
+					this.playersHand[1].value === 1)
 			);
 		},
 	},
@@ -275,10 +276,7 @@ export default {
 			this.numGames++;
 			this.placePlayerCard();
 			this.placePlayerCard();
-			if (
-				this.handValue(this.playersHand) === 21 &&
-				this.playersHand.length === 2
-			) {
+			if (this.isBJ(this.playersHand)) {
 				return;
 			}
 			this.placeDealerCard();
@@ -310,14 +308,7 @@ export default {
 			}
 			hand.push(this.shuffledCards[0]);
 			this.shuffledCards.shift();
-			if (
-				this.handValue(hand) > 21 &&
-				hand.map(x => x.value).lastIndexOf(11) !== -1
-			) {
-				hand.filter(x => x.value === 11)[
-					hand.filter(x => x.value === 11).length - 1
-				].value = 1;
-			}
+			this.checkAceValue(hand);
 			if (play === 'split') {
 				return;
 			} else if (play === 'double' || this.handValue(hand) >= 21) {
@@ -335,13 +326,19 @@ export default {
 			}
 			this.dealersHand.push(this.shuffledCards[0]);
 			this.shuffledCards.shift();
+			this.checkAceValue(this.dealersHand);
+		},
+
+		checkAceValue(hand) {
 			if (
-				this.handValue(this.dealersHand) > 21 &&
-				this.dealersHand.map(x => x.value).lastIndexOf(11) !== -1
+				this.handValue(hand) > 21 &&
+				hand.map(x => x.value).lastIndexOf(11) !== -1
 			) {
-				this.dealersHand.filter(x => x.value === 11)[
-					this.dealersHand.filter(x => x.value === 11).length - 1
+				hand.filter(x => x.value === 11)[
+					hand.filter(x => x.value === 11).length - 1
 				].value = 1;
+			} else if (hand[0].value === 1) {
+				hand[0].value === 11;
 			}
 		},
 
@@ -353,9 +350,11 @@ export default {
 		},
 
 		split() {
+			this.numGames++;
 			this.bankAmount -= this.betAmount;
 			this.totalBetAmount += this.betAmount;
 			this.playersSplitHand.push(this.playersHand[1]);
+			this.checkAceValue(this.playersSplitHand);
 			this.playersHand.pop();
 			this.messages[1] = 'Dealer stands on 17\nBlackjack pays 3 to 2';
 			this.placePlayerCard(this.playersHand, 'split');
@@ -379,7 +378,12 @@ export default {
 				this.currentHand = this.playersSplitHand;
 				return;
 			}
-			if (this.handValue(this.dealersHand) >= 17) {
+			if (
+				this.handValue(this.playersHand) > 21 ||
+				(this.isBJ(this.playersHand) &&
+					this.currentHand !== this.playersSplitHand) ||
+				this.handValue(this.dealersHand) >= 17
+			) {
 				this.decideWinner();
 			} else {
 				this.placeDealerCard();
