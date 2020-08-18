@@ -379,9 +379,12 @@ export default {
 				return;
 			}
 			if (
-				this.handValue(this.playersHand) > 21 ||
-				(this.isBJ(this.playersHand) &&
-					this.currentHand !== this.playersSplitHand) ||
+				(this.handValue(this.playersHand) > 21 &&
+					this.handValue(this.playersSplitHand) > 21) ||
+				((this.handValue(this.playersHand) > 21 ||
+					this.isBJ(this.playersHand)) &&
+					this.currentHand !== this.playersSplitHand &&
+					this.dealersHand.length === 2) ||
 				this.handValue(this.dealersHand) >= 17
 			) {
 				this.decideWinner();
