@@ -50,7 +50,7 @@ export default {
 	align-items: center;
 
 	&::before {
-		content: '<';
+		content: '\1438';
 		display: block;
 		font-size: 30px;
 		font-weight: bold;

@@ -14,8 +14,6 @@ export default {
 </script>
 
 <style lang="scss">
-@import 'reset-css';
-
 * {
 	box-sizing: border-box;
 }

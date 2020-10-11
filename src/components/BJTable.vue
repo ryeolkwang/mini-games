@@ -25,19 +25,15 @@
 					:key="idx"
 					:src="
 						dealersHand.length === 2 && !isDecided && idx === 1
-							? ''
+							? require('../assets/cards/card_back_side.png')
 							: card.src
 					"
 					:alt="
 						dealersHand.length === 2 && !isDecided && idx === 1
-							? ''
+							? 'Hidden Card'
 							: 'Dealers Card'
 					"
 					class="card"
-					:class="{
-						ExHide:
-							dealersHand.length === 2 && !isDecided && idx === 1,
-					}"
 				/>
 			</div>
 		</div>
@@ -545,13 +541,6 @@ export default {
 
 	+ .card {
 		margin-left: -58px;
-	}
-
-	&.ExHide {
-		background-color: rgba(0, 0, 0, 0.95);
-		border: 1px solid #000;
-		border-radius: 4px;
-		width: 73px;
 	}
 
 	&.ExSmall {

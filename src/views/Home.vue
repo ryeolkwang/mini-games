@@ -1,6 +1,9 @@
 <template>
 	<div class="home">
-		<h1 class="title">Welcome to the Mini-Games Project</h1>
+		<h1 class="title">
+			Welcome to the<br />
+			Mini-Games Project
+		</h1>
 		<h3 class="subtitle">List of Games</h3>
 		<ul class="gameList">
 			<router-link
@@ -44,7 +47,7 @@ export default {
 <style lang="scss" scoped>
 .title {
 	margin-bottom: 20px;
-	padding: 20px;
+	padding: 60px 30px;
 	font-size: 30px;
 	font-weight: bold;
 }

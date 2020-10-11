@@ -1,13 +1,13 @@
 <template>
 	<div class="blackjack">
 		<div
-			v-if="!isPlaying"
+			v-show="!isPlaying"
 			class="playButton"
 			@click="isPlaying = !isPlaying"
 		>
 			Play
 		</div>
-		<BJTable v-if="isPlaying" @end-game="isPlaying = !isPlaying" />
+		<BJTable v-show="isPlaying" @end-game="isPlaying = !isPlaying" />
 	</div>
 </template>
 
