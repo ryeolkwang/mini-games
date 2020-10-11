@@ -12,11 +12,21 @@
 			<router-link to="/blackjack" @click.native="closeMenu">
 				BlackJack
 			</router-link>
+			<router-link to="/piggame" @click.native="closeMenu">
+				Pig Game
+			</router-link>
+			<router-link to="/tictactoe" @click.native="closeMenu">
+				Tic-tac-toe
+			</router-link>
 			<router-link to="/credits" @click.native="closeMenu">
 				Credits
 			</router-link>
 		</ul>
-		<div v-show="showMenu" class="overlay"></div>
+		<div
+			v-show="showMenu"
+			class="overlay"
+			@click="showMenu = !showMenu"
+		></div>
 	</nav>
 </template>
 
@@ -51,6 +61,7 @@ export default {
 		height: 3px;
 		width: 26px;
 		background-color: #000;
+		border-radius: 100px;
 	}
 
 	&::after {
@@ -61,6 +72,7 @@ export default {
 		height: 3px;
 		width: 26px;
 		background-color: #000;
+		border-radius: 100px;
 	}
 
 	&.close {
@@ -88,19 +100,17 @@ export default {
 	width: 270px;
 	height: 100vh;
 	padding: 50px 20px;
-	background-color: rgb(0, 0, 0, 0.9);
+	background-color: #fff;
 
 	a {
 		display: block;
 		margin-bottom: 20px;
 		padding: 10px;
-		font-weight: bold;
-		color: #fff;
+		color: #080808;
 		text-decoration: none;
 
 		&.router-link-exact-active {
-			color: #080808;
-			background-color: #fff;
+			font-weight: bold;
 			border-radius: 100px;
 		}
 	}

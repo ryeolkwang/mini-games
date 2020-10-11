@@ -266,3 +266,30 @@ export const JOKER = {
 	src: require('../assets/cards/black_joker.png'),
 	value: 0,
 };
+
+export const DICE = [
+	{
+		value: 1,
+		src: require('../assets/dice/dice-1.png'),
+	},
+	{
+		value: 2,
+		src: require('../assets/dice/dice-2.png'),
+	},
+	{
+		value: 3,
+		src: require('../assets/dice/dice-3.png'),
+	},
+	{
+		value: 4,
+		src: require('../assets/dice/dice-4.png'),
+	},
+	{
+		value: 5,
+		src: require('../assets/dice/dice-5.png'),
+	},
+	{
+		value: 6,
+		src: require('../assets/dice/dice-6.png'),
+	},
+];

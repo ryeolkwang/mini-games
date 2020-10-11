@@ -32,12 +32,17 @@ export default {
 			{
 				name: 'Pig Game',
 				src: require('../assets/dice.png'),
-				page: '/blackjack',
+				page: '/piggame',
+			},
+			{
+				name: 'Tic-tac-toe',
+				src: require('../assets/tictactoe.jpg'),
+				page: '/tictactoe',
 			},
 			{
 				name: 'others',
 				src: require('../assets/other.png'),
-				page: '/blackjack',
+				page: '/credits',
 			},
 		],
 	},

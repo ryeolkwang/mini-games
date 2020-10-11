@@ -3,6 +3,7 @@ import App from './App.vue';
 import router from './router';
 import store from './store';
 require('reset-css');
+require('vue-ionicons/ionicons.css');
 
 Vue.config.productionTip = false;
 
