@@ -5,19 +5,24 @@
 				Pig Game Rules
 			</h3>
 			<p>
-				Lorem, ipsum dolor sit amet consectetur adipisicing elit. Totam
-				atque, natus voluptatibus enim sit aperiam ab laborum vel.
-				Corporis facilis inventore hic fugit at tempore ad voluptatum
-				fugiat itaque eum?
+				A simple 1v1 dice rolling game that you can play by yourself
+				against a computer or with a friend!
 			</p>
 			<p>
-				Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-				Molestiae veniam vel maiores delectus, est beatae alias
-				consequuntur quod pariatur sed dicta tempore, placeat vitae
-				numquam architecto ipsam asperiores magnam iste.
+				Players temporarily recieve the amount of points rolled by the
+				dice which is added to your current score. Players can only cash
+				in their current score to their total score when they press
+				'Hold Score' and the turn will go to the next player. Players
+				can continue to 'Roll Dice' to increase their current score. If
+				a player rolls a one on either of the dice, the player will lose
+				all their current point score, but retain their previous total
+				score, and the next player plays.
 			</p>
+			<button class="play-button" @click="playVsComputer()">
+				Play <span>(vs Computer)</span><IosPlayIcon />
+			</button>
 			<button class="play-button" @click="isPlaying = !isPlaying">
-				Play<IosPlayIcon />
+				Play <span>(2 Player)</span><IosPlayIcon />
 			</button>
 		</div>
 		<pig-player
@@ -28,6 +33,7 @@
 			:player="player"
 			:currentPlayer="currentPlayer"
 			:isFinished="isFinished"
+			:isComputer="isComputer"
 			@roll-dice="rollDice"
 			@hold-score="holdScore"
 		/>
@@ -86,6 +92,7 @@ export default {
 					isWinner: false,
 				},
 			],
+			isComputer: false,
 			winningScore: 100,
 		};
 	},
@@ -103,6 +110,12 @@ export default {
 	},
 
 	methods: {
+		playVsComputer() {
+			this.isComputer = true;
+			this.isPlaying = !this.isPlaying;
+			this.players[1].name = 'Computer';
+		},
+
 		playAgain() {
 			this.currentPlayer = 0;
 			this.dice = null;
@@ -114,7 +127,7 @@ export default {
 					isWinner: false,
 				},
 				{
-					name: 'Player 2',
+					name: this.isComputer ? 'Computer' : 'Player 2',
 					holdingScore: 0,
 					currentScore: 0,
 					isWinner: false,
@@ -122,28 +135,30 @@ export default {
 			];
 		},
 
-		rollDice() {
+		rollDice(role = 'player') {
 			this.dice = [
 				this.DICE[Math.floor(Math.random() * 6)],
 				this.DICE[Math.floor(Math.random() * 6)],
 			];
 			if (this.dice.some(die => die.value === 1)) {
 				this.players[this.currentPlayer].currentScore = 0;
-				this.currentPlayer
-					? (this.currentPlayer = 0)
-					: (this.currentPlayer = 1);
+				if (role === 'computer') {
+					return;
+				}
+				this.holdScore('roll');
 			} else {
 				this.players[this.currentPlayer].currentScore += this.diceValue;
 			}
 		},
 
-		holdScore() {
+		holdScore(method) {
 			this.players[this.currentPlayer].holdingScore += this.players[
 				this.currentPlayer
 			].currentScore;
 			if (
+				method !== 'roll' &&
 				this.players[this.currentPlayer].holdingScore >=
-				this.winningScore
+					this.winningScore
 			) {
 				this.players[this.currentPlayer].isWinner = true;
 				return;
@@ -152,6 +167,21 @@ export default {
 			this.currentPlayer
 				? (this.currentPlayer = 0)
 				: (this.currentPlayer = 1);
+
+			if (
+				method !== 'auto' &&
+				this.isComputer &&
+				this.currentPlayer === 1
+			) {
+				this.playAuto();
+			}
+		},
+
+		playAuto() {
+			setTimeout(() => {
+				this.rollDice('computer');
+				setTimeout(() => this.holdScore('auto'), 1000);
+			}, 1000);
 		},
 	},
 };
@@ -171,12 +201,13 @@ export default {
 	h3 {
 		font-size: 20px;
 		font-weight: bold;
-		margin-bottom: 50px;
+		margin-bottom: 40px;
 	}
 
 	p {
 		text-align: left;
 		line-height: 1.3;
+		font-size: 14px;
 		margin-bottom: 30px;
 	}
 }
@@ -204,6 +235,12 @@ export default {
 		transform: translate(-50%, -50%);
 		width: 50%;
 		margin-top: 0;
+	}
+
+	span {
+		font-size: 14px;
+		font-weight: normal;
+		vertical-align: 3px;
 	}
 }
 

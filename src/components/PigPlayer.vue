@@ -5,7 +5,7 @@
 	>
 		<div class="player-section" :class="{ ExOther: index }">
 			<h3 v-if="player.isWinner" class="winner-text">Winner!</h3>
-			<input v-else type="text" :value="`Player ${index + 1}`" />
+			<input v-else type="text" :value="player.name" />
 			<div class="holding-score">
 				{{ player.holdingScore }}
 			</div>
@@ -16,8 +16,13 @@
 				</span>
 			</div>
 		</div>
-		<div v-show="showButtonArea" class="button-area">
-			<!-- <button class="btn-new"><IosAddCircleOutlineIcon />New game</button> -->
+		<div
+			v-if="showButtonArea && isComputer && currentPlayer === 1"
+			class="button-area"
+		>
+			<IosSettingsIcon w="60px" h="60px" animate="rotate" />
+		</div>
+		<div v-else-if="showButtonArea" class="button-area">
 			<button class="btn-roll" @click="$emit('roll-dice')">
 				<IosSyncIcon />Roll dice
 			</button>
@@ -31,11 +36,13 @@
 <script>
 import IosSyncIcon from 'vue-ionicons/dist/ios-sync.vue';
 import IosDownloadIcon from 'vue-ionicons/dist/ios-download.vue';
+import IosSettingsIcon from 'vue-ionicons/dist/ios-settings.vue';
 
 export default {
 	components: {
 		IosSyncIcon,
 		IosDownloadIcon,
+		IosSettingsIcon,
 	},
 
 	props: {
@@ -57,6 +64,11 @@ export default {
 		isFinished: {
 			type: Boolean,
 			required: true,
+		},
+
+		isComputer: {
+			type: Boolean,
+			default: false,
 		},
 	},
 
