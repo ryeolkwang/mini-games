@@ -18,9 +18,6 @@
 			<router-link to="/tictactoe" @click.native="closeMenu">
 				Tic-tac-toe
 			</router-link>
-			<router-link to="/credits" @click.native="closeMenu">
-				Credits
-			</router-link>
 		</ul>
 		<div
 			v-show="showMenu"

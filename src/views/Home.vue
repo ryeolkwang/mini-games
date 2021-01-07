@@ -42,7 +42,7 @@ export default {
 			{
 				name: 'others',
 				src: require('../assets/other.png'),
-				page: '/credits',
+				page: '/',
 			},
 		],
 	},

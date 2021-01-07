@@ -1,14 +1,31 @@
 <template>
 	<header class="header">
 		<div class="headerInner">
-			<div
-				v-if="$route.path !== '/'"
-				class="backButton"
-				@click="$router.back()"
-			>
-				Back
+			<div class="headerButtons">
+				<router-link v-if="$route.path !== '/'" to="/">
+					<IosHomeIcon />
+				</router-link>
+				<router-link
+					v-if="
+						$route.path !== '/login' &&
+							!$store.getters.isAuthenticated
+					"
+					to="/login"
+				>
+					<IosLogInIcon />
+				</router-link>
+				<router-link
+					v-if="
+						$route.path !== '/login' &&
+							$store.getters.isAuthenticated
+					"
+					to="/credits"
+					@click.native="$store.dispatch('logout')"
+				>
+					<IosLogOutIcon />
+				</router-link>
 			</div>
-			<div class="logo">Games</div>
+			<div class="title">Games</div>
 			<Nav />
 		</div>
 	</header>
@@ -16,9 +33,12 @@
 
 <script>
 import Nav from '@/components/Nav.vue';
+import IosHomeIcon from 'vue-ionicons/dist/ios-home.vue';
+import IosLogInIcon from 'vue-ionicons/dist/ios-log-in.vue';
+import IosLogOutIcon from 'vue-ionicons/dist/ios-log-out.vue';
 
 export default {
-	components: { Nav },
+	components: { Nav, IosHomeIcon, IosLogInIcon, IosLogOutIcon },
 };
 </script>
 
@@ -38,28 +58,26 @@ export default {
 	justify-content: center;
 }
 
-.backButton {
-	position: absolute;
-	top: 0;
-	left: 0;
-	height: 50px;
-	width: 50px;
-	font-size: 0;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-
-	&::before {
-		content: '\1438';
-		display: block;
-		font-size: 30px;
-		font-weight: bold;
-	}
-}
-
-.logo {
+.title {
 	font-size: 18px;
 	font-weight: bold;
 	line-height: 50px;
+}
+
+.headerButtons {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: flex;
+
+	a {
+		width: 50px;
+		height: 50px;
+		font-size: 24px;
+		color: #2c3e50;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
 }
 </style>

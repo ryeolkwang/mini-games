@@ -1,6 +1,11 @@
 <template>
 	<div class="credits">
-		<h1 class="title">Thanks for playing!</h1>
+		<h1 class="title">
+			Successfully Logged Out.
+		</h1>
+		<h1 class="title">
+			Thanks for playing!
+		</h1>
 	</div>
 </template>
 
@@ -8,6 +13,7 @@
 .credits {
 	height: calc(100vh - 50px);
 	display: flex;
+	flex-direction: column;
 	justify-content: center;
 	align-items: center;
 }
