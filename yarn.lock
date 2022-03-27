@@ -5184,9 +5184,9 @@ minimatch@^3.0.4:
     brace-expansion "^1.1.7"
 
 minimist@^1.2.0, minimist@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.npm.taobao.org/minimist/download/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-  integrity sha1-Z9ZgFLZqaoqqDAg8X9WN9OTpdgI=
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.6.tgz#8637a5b759ea0d6e98702cfb3a9283323c93af44"
+  integrity sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==
 
 minipass-collect@^1.0.2:
   version "1.0.2"
@@ -6659,6 +6659,11 @@ requires-port@^1.0.0:
   resolved "https://registry.npm.taobao.org/requires-port/download/requires-port-1.0.0.tgz#925d2601d39ac485e091cf0da5c6e694dc3dcaff"
   integrity sha1-kl0mAdOaxIXgkc8NpcbmlNw9yv8=
 
+reset-css@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/reset-css/-/reset-css-5.0.1.tgz#1ced0604fdb6836567e40d82de3537afaf3bb4c8"
+  integrity sha512-VyuJdNFfp5x/W6e5wauJM59C02Vs0P22sxzZGhQMPaqu/NGTeFxlBFOOw3eq9vQd19gIDdZp7zi89ylyKOJ33Q==
+
 resolve-cwd@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npm.taobao.org/resolve-cwd/download/resolve-cwd-2.0.0.tgz#00a9f7387556e27038eae232caa372a6a59b665a"
@@ -7916,6 +7921,11 @@ vue-hot-reload-api@^2.3.0:
   version "2.3.4"
   resolved "https://registry.npm.taobao.org/vue-hot-reload-api/download/vue-hot-reload-api-2.3.4.tgz#532955cc1eb208a3d990b3a9f9a70574657e08f2"
   integrity sha1-UylVzB6yCKPZkLOp+acFdGV+CPI=
+
+vue-ionicons@^3.0.5:
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/vue-ionicons/-/vue-ionicons-3.0.5.tgz#4c3cd6efc91738d760c30e663c89932e4304e5fa"
+  integrity sha512-1zZN/mcLRk6XKmQYMue699ut99qVMm+YfB3TY6jcTuzLSYh76BS9CcToLX/9v/0aOf8aTKHAPx2USdNBaY9IRw==
 
 vue-loader@^15.9.2:
   version "15.9.3"
